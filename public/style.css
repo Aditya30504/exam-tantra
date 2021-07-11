@@ -1,0 +1,41 @@
+h1{
+    color: blue;
+    text-align: center;
+}
+#container{
+    padding-top: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#form{
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50px;
+}
+#urlHolder{
+    height: 40px;
+    min-width: 400px;
+    border-radius: 50px;
+}
+#btn{
+    height: 50px;
+    min-width: 150px;
+    border-radius: 50px;
+    color: white;
+    background-color: grey;
+}
+#sizedH{
+    width: 100px;
+}
+#sizedV{
+    height: 80px;
+}
+#shortUrl{
+color: blue;
+font-weight: bold;
+font-size:xx-large;
+}
