@@ -14,6 +14,7 @@ app.use("/static", express.static(path.join(__dirname, "public")));
 app.set("view engine", "pug");
 // set the views directory
 app.set("views", path.join(__dirname, "views"));
+
 const questions = [
   {
     id: 1,
@@ -45,7 +46,7 @@ const questions = [
 
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 app.get("/", (req, res) => {
-  res.render("demo.pug");
+  res.render("finish.pug");
 });
 
 app.get("/quiz", (req, res) => {
@@ -62,15 +63,10 @@ app.get("/quiz", (req, res) => {
 //   });
 // });
 
-// app.post("/", (req, res) => {
-//   const param = {
-//     title: "URL Shortner | CK STUDIO",
-//     content: "URL Shortner with only 4 chars",
-//     // shortUrl: req.protocol + "://" + req.hostname + "/" + shortner.short(4),
-//     shortUrl: req.body.longUrl
-//   };
-//   res.render("demo.pug", param);
-// });
+app.post("/", (req, res) => {
+  console.log(req.body);
+  res.render("finish.pug");
+});
 
 // --------------------------------------------------------------------------
 //                     for api or microservices
