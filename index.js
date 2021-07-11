@@ -46,11 +46,11 @@ const questions = [
 
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 app.get("/", (req, res) => {
-  res.render("finish.pug");
+  res.send("Hello World");
 });
 
 app.get("/quiz", (req, res) => {
-  res.render("demo.pug", questions);
+  res.render("demo.pug", {"questions":questions[0]});
 });
 
 // app.get("/:id", (req, res) => {

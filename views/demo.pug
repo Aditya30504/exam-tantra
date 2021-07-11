@@ -10,10 +10,10 @@ html(lang="en")
         h1 MCQ Web App
         div#container 
             form#form(action="/" method="post") 
-                p.ques questions['name']
+                p.ques #{questions['name']}            
                 ul
-                    li questions['option_1']
-                    li questions['option_3']
-                    li questions['option_3']
-                    li questions['option_4']
+                    li #{questions['option_1']}
+                    li #{questions['option_3']}
+                    li #{questions['option_3']}
+                    li #{questions['option_4']}
                 input(type="submit", value="Finish")
