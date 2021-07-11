@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/quiz", (req, res) => {
-  res.render("demo.pug", {"questions":questions[0]});
+  res.render("demo.pug", {"questions":questions});
 });
 
 // app.get("/:id", (req, res) => {
