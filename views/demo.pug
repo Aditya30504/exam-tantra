@@ -4,18 +4,26 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible" content="IE=edge")
         meta(name="viewport" content="width=device-width, initial-scale=1.0")
-        title=title
-        link(rel="stylesheet", href="../public/style.css")
+        link(rel="stylesheet" type="text/css" href="public/style.css")
+        script(type="text/javascript" src="/public/main.js") 
+        title mcq web app
     body 
         h1 MCQ Web App
         div#container 
             form#form(action="/" method="post")
-            -var q = 0; 
-                p.ques #{questions[0]['name']}            
-                ul
-                    li #{questions[0]['option_1']}
-                    li #{questions[0]['option_3']}
-                    li #{questions[0]['option_3']}
-                    li #{questions[0]['option_4']}
+                p.ques #{questions[0]['name']}
+                input#option1(type="radio", name="option" value=`#{questions[0]['option_1']`)
+                label(for="option1")  #{questions[0]['option_1']}
+                br
+                input#option1(type="radio", name="option" value="{questions[0]['option_2']}")
+                label(for="option2")  #{questions[0]['option_2']}
+                br
+                input#option1(type="radio", name="option" value="{questions[0]['option_3']}")
+                label(for="option3")  #{questions[0]['option_3']}
+                br
+                input#option1(type="radio", name="option" value="{questions[0]['option_4']}")
+                label(for="option4")  #{questions[0]['option_4']}
+                br   
                 input(type="submit", value="Finish")
                 button(onclick="alert('hello')") Next-> 
+            button(onclick="save()") Save 

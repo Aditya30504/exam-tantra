@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // for serving static files only
-app.use("/static", express.static(path.join(__dirname, "public")));
+app.use("/public", express.static(path.join(__dirname, "/public")));
 // Set the template engine as pug
 app.set("view engine", "pug");
 // set the views directory
@@ -53,15 +53,7 @@ app.get("/quiz", (req, res) => {
   res.render("demo.pug", {"questions":questions});
 });
 
-// app.get("/:id", (req, res) => {
-//   const shortUrl = req.protocol + "://" + req.hostname + "/" + req.params.id;
-//   // console.log("shortUrl : => "+shortUrl);
-//   // let Url = urlmaps.find((u) => u.shortUrl === shortUrl);
-//   Url.findOne({ shortUrl: shortUrl }).then((results) => {
-//     // console.log(results.origUrl);
-//     res.redirect(results.origUrl);
-//   });
-// });
+
 
 app.post("/", (req, res) => {
   console.log(req.body);
@@ -71,24 +63,21 @@ app.post("/", (req, res) => {
 // --------------------------------------------------------------------------
 //                     for api or microservices
 // --------------------------------------------------------------------------
-/*
-app.get("/api/courses", (req, res) => {
-  res.send(courses);
+// To get questions
+app.get("/api/questions", (req, res) => {
+  res.send(questions);
 });
-
-app.post("/api/courses", (req, res) => {
-  if (!req.body.name || req.body.name.length < 3) {
-    res.status(404).send("Please give a valid course name");
+// To submit qustions' answers
+app.post("/api/questions", (req, res) => {
+  if (!req.body.answers) {
+    res.status(404).send("Please give a valid answers");
     return;
   }
-  let course = {
-    id: courses.length + 1,
-    name: req.body.name,
-  };
-  courses.push(course);
-  res.send(course);
+  let ans = req.body.answers
+  res.send(ans);
 });
 
+/*
 app.put("/api/courses/:id", (req, res) => {
   let course = courses.find((c) => c.id === parseInt(req.params.id));
   if (!course) {
