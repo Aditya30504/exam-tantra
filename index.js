@@ -1,7 +1,25 @@
 // For importing modules
 const express = require("express");
 const path = require("path");
+const jwt = require("jsonwebtoken");
 
+// middleware to verify token {function}
+function verifyToken(req, res, next) {
+  // Get the Auth header value
+  const authHeader = req.headers["authorization"];
+  // Check if bearer is unidentified
+  if (typeof authHeader !== "undefined") {
+    // Split at the space
+    const bearer = authHeader.split(" ");
+    const bearerToken = bearer[1];
+    req.token = bearerToken;
+    // Next middleware
+    next();
+  } else {
+    // Forbidden
+    res.sendStatus(403);
+  }
+}
 // Express stuff
 const port = process.env.PORT || 80;
 const app = express();
@@ -19,30 +37,28 @@ const questions = [
   {
     id: 1,
     name: "Who is the P.M. of India ?",
-    option_1:"Narendra Modi",
-    option_2:"Nirav Modi",
-    option_3:"Dr. Manmohan Singh",
-    option_4:"Sonia Gandhi"
+    option_1: "Narendra Modi",
+    option_2: "Nirav Modi",
+    option_3: "Dr. Manmohan Singh",
+    option_4: "Sonia Gandhi",
   },
   {
     id: 2,
     name: "Who is the President of U.S.A. ?",
-    option_1:"Barak Obama",
-    option_2:"john Bido",
-    option_3:"Dr. Manmohan Singh",
-    option_4:"Donald Trump"
+    option_1: "Barak Obama",
+    option_2: "john Bido",
+    option_3: "Dr. Manmohan Singh",
+    option_4: "Donald Trump",
   },
   {
     id: 3,
     name: "Who is the founder of Microsoft ?",
-    option_1:"Sachin Tendulkar",
-    option_2:"Sundar Pichai",
-    option_3:"Gautam Gambir",
-    option_4:"Bill Gates"
+    option_1: "Sachin Tendulkar",
+    option_2: "Sundar Pichai",
+    option_3: "Gautam Gambir",
+    option_4: "Bill Gates",
   },
 ];
-
-
 
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 app.get("/", (req, res) => {
@@ -50,9 +66,8 @@ app.get("/", (req, res) => {
 });
 
 app.get("/quiz", (req, res) => {
-  res.render("demo.pug", {"questions":questions});
+  res.render("demo.pug", { questions: questions });
 });
-
 
 app.post("/", (req, res) => {
   console.log(req.body);
@@ -63,20 +78,43 @@ app.post("/", (req, res) => {
 //                     for api or microservices
 // --------------------------------------------------------------------------
 
+// To create a new user
+app.post("/api/register", (req, res) => {
+  res.json({
+    name: req.body.username,
+    password: req.body.password,
+    registered: true,
+  });
+});
+
+// To log in a user
+app.post("/api/login", (req, res) => {
+  const token = jwt.sign({ username: req.body.username }, "secretKey", {
+    expiresIn: "1800s",
+  });
+  res.json(token);
+});
+
 // To get questions
-app.get("/api/questions", (req, res) => {
-  res.send(questions);
+app.get("/api/questions", verifyToken, (req, res) => {
+  jwt.verify(req.token, "secretKey", (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      console.log(authData);
+      res.send(questions);
+    }
+  });
 });
 // To submit qustions' answers
-app.post("/api/questions", (req, res) => {
+app.post("/api/answers", verifyToken, (req, res) => {
   if (!req.body.answers) {
     res.status(404).send("Please give a valid answers");
     return;
   }
-  let ans = req.body.answers
+  let ans = req.body.answers;
   res.send(ans);
 });
-
 
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
