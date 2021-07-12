@@ -54,7 +54,6 @@ app.get("/quiz", (req, res) => {
 });
 
 
-
 app.post("/", (req, res) => {
   console.log(req.body);
   res.render("finish.pug");
@@ -63,6 +62,7 @@ app.post("/", (req, res) => {
 // --------------------------------------------------------------------------
 //                     for api or microservices
 // --------------------------------------------------------------------------
+
 // To get questions
 app.get("/api/questions", (req, res) => {
   res.send(questions);
@@ -77,40 +77,6 @@ app.post("/api/questions", (req, res) => {
   res.send(ans);
 });
 
-/*
-app.put("/api/courses/:id", (req, res) => {
-  let course = courses.find((c) => c.id === parseInt(req.params.id));
-  if (!course) {
-    res.status(404).send("The course with the given id was not found");
-    return;
-  }
-  if (!req.body.name || req.body.name.length < 3) {
-    res.status(404).send("Please give a valid course name");
-    return;
-  }
-  course.name = req.body.name;
-  res.send(course);
-});
 
-app.delete("/api/courses/:id", (req, res) => {
-  let course = courses.find((c) => c.id === parseInt(req.params.id));
-  if (!course) {
-    res.status(404).send("The course with the given id was not found");
-    return;
-  }
-
-  const index = courses.indexOf(course);
-  courses.splice(index, 1);
-  res.send(course);
-});
-
-app.get("/api/courses/:id", (req, res) => {
-  let course = courses.find((c) => c.id === parseInt(req.params.id));
-  if (!course)
-    res.status(404).send("The course with the given id was not found");
-  else res.send(course);
-  // res.send(req.params.id);
-});
-*/
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
