@@ -2,6 +2,7 @@
 const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
 
 // middleware to verify token {function}
 function verifyToken(req, res, next) {
@@ -23,6 +24,7 @@ function verifyToken(req, res, next) {
 // Express stuff
 const port = process.env.PORT || 80;
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -98,8 +100,8 @@ app.post("/api/login", (req, res) => {
   });
   res.json(token);
 });
-
 // To get questions
+/*
 app.get("/api/questions", verifyToken, (req, res) => {
   jwt.verify(req.token, "secretKey", (err, authData) => {
     if (err) {
@@ -108,6 +110,13 @@ app.get("/api/questions", verifyToken, (req, res) => {
       console.log(authData);
       res.send(questions);
     }
+  });
+});
+*/
+// for testing purpose only
+app.get("/api/questions", (req, res) => {
+  res.send({
+    ques: questions,
   });
 });
 
