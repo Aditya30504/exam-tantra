@@ -69,6 +69,10 @@ app.get("/quiz", (req, res) => {
   res.render("demo.pug", { questions: questions });
 });
 
+app.get("/quiz", (req, res) => {
+  res.render("demo.pug", { questions: questions });
+});
+
 app.post("/", (req, res) => {
   console.log(req.body);
   res.render("finish.pug");
@@ -106,6 +110,7 @@ app.get("/api/questions", verifyToken, (req, res) => {
     }
   });
 });
+
 // To submit qustions' answers
 app.post("/api/answers", verifyToken, (req, res) => {
   if (!req.body.answers) {
@@ -114,6 +119,16 @@ app.post("/api/answers", verifyToken, (req, res) => {
   }
   let ans = req.body.answers;
   res.send(ans);
+});
+
+// To create qustions' by admin or teacher
+app.post("/api/questions", verifyToken, (req, res) => {
+  if (!req.body.questions) {
+    res.status(404).send("Please give a valid questions");
+    return;
+  }
+  let ques = req.body.answers;
+  res.send(ques);
 });
 
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
