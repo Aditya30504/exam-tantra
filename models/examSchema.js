@@ -1,15 +1,19 @@
 const mongoose = require("mongoose");
 
-const ResponseSchema = new mongoose.Schema({
+const ExamSchema = new mongoose.Schema({
   code: {
     type: String,
     required: true,
   },
-  marks: {
+  duration: {
     type: Int,
-    reuired: true,
+    required: true,
   },
-  submitted_by: {
+  questions: {
+    type: array,
+    required: true,
+  },
+  schedule_time: {
     type: String,
     reuired: true,
   },
@@ -23,5 +27,5 @@ const ResponseSchema = new mongoose.Schema({
   },
 });
 
-const Response = mongoose.model("exam-tantra", ResponseSchema);
-module.exports = Response;
+const Exam = mongoose.model("exam-tantra", ExamSchema);
+module.exports = Exam;

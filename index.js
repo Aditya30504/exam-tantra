@@ -146,7 +146,7 @@ app.get("/api/exam", verifyToken, (req, res) => {
 app.get("/api/exam", (req, res) => {
   let exam_code = req.body.exam_code;
   res.send({
-    ques: questions,
+    exam: exam,
   });
 });
 
