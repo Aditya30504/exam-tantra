@@ -6,11 +6,11 @@ const ExamSchema = new mongoose.Schema({
     required: true,
   },
   duration: {
-    type: Int,
+    type: Int16Array,
     required: true,
   },
   questions: {
-    type: array,
+    type: Array,
     required: true,
   },
   schedule_time: {

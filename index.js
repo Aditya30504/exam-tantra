@@ -4,7 +4,10 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const mongoose = require("mongoose");
-
+const Exam = require("./models/examSchema");
+const Response = require("./models/responseSchema");
+const CorrectAns = require("./models/correctAnsSchema");
+const User = require("./models/userSchema");
 
 // middleware to verify token {function}
 function verifyToken(req, res, next) {
@@ -37,44 +40,20 @@ app.use("/public", express.static(path.join(__dirname, "/public")));
 app.set("views", path.join(__dirname, "views"));
 
 // conneting to database
-const DB = "mongodb+srv://chanshu:Casd@805131@exam-tantra.sweey.mongodb.net/exam-tantra?retryWrites=true&w=majority";
+const DB =
+  "mongodb+srv://chanshu:Casd@805131@exam-tantra.sweey.mongodb.net/exam-tantra?retryWrites=true&w=majority";
 mongoose
-.connect(DB, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-})
-.then(() => {
-  console.log("connection successful");
-})
-.catch((err) => console.log(err));
-const questions = [
-  {
-    id: 1,
-    name: "Who is the P.M. of India ?",
-    option_1: "Narendra Modi",
-    option_2: "Nirav Modi",
-    option_3: "Dr. Manmohan Singh",
-    option_4: "Sonia Gandhi",
-  },
-  {
-    id: 2,
-    name: "Who is the President of U.S.A. ?",
-    option_1: "Barak Obama",
-    option_2: "john Bido",
-    option_3: "Dr. Manmohan Singh",
-    option_4: "Donald Trump",
-  },
-  {
-    id: 3,
-    name: "Who is the founder of Microsoft ?",
-    option_1: "Sachin Tendulkar",
-    option_2: "Sundar Pichai",
-    option_3: "Gautam Gambir",
-    option_4: "Bill Gates",
-  },
-];
+  .connect(DB, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
+  .then(() => {
+    console.log("connection successful");
+  })
+  .catch((err) => console.log(err));
+
 
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 // To render html page of home
@@ -103,21 +82,37 @@ app.get("/exam", (req, res) => {
 });
 
 // To render html page for conduncting exam
-app.get("/conduct_exam",(req, res) => {
+app.get("/conduct_exam", (req, res) => {
   res.send("rendering html page for creating exams ");
 });
-
 
 // --------------------------------------------------------------------------
 //                     for api or microservices
 // --------------------------------------------------------------------------
+// To find a user
+app.get('api/user/:username',(req,res)=>{
+  User.findOne({'name':req.body.username}).then((user)=>{
+    if(user){
+      res.json({
+        message:'yes',
+      });
+    }else{
+      res.json({
+        message:'no',
+      });
+    }
+  });
+});
 
 // To create a new user
 app.post("/api/register", (req, res) => {
-  res.json({
+  user = new User({
     name: req.body.username,
+    email:req.body.email,
     password: req.body.password,
-    registered: true,
+  });
+  user.save().then(()=>{
+    res.sendStatus(200);
   });
 });
 
@@ -128,46 +123,68 @@ app.post("/api/login", (req, res) => {
   });
   res.json(token);
 });
+
 // To get exam's questions along with instructions
-/*
-app.get("/api/exam", verifyToken, (req, res) => {
-  jwt.verify(req.token, "secretKey", (err, authData) => {
-    if (err) {
-      res.sendStatus(403);
-    } else {
-      console.log(authData);
-      res.send(questions);
-    }
-  });
-});
-*/
-// for testing purpose only
-// To get exam's questions along with instructions
-app.get("/api/exam", (req, res) => {
-  let exam_code = req.body.exam_code;
-  res.send({
-    exam: exam,
+app.get("/api/exam/:code", (req, res) => {
+  let exam_code = req.params.code;
+  Exam.findOne({ code: exam_code }).then((exam) => {
+    res.send({
+      exam: exam,
+    });
   });
 });
 
 // To submit qustions' answers
-app.post("/api/exam", verifyToken, (req, res) => {
-  if (!req.body.answers) {
-    res.status(404).send("Please give a valid answers");
-    return;
-  }
-  let ans = req.body.answers;
-  res.send(ans);
+app.post("/api/exam/:code", verifyToken, (req, res) => {
+  jwt.verify(req.token, "secretKey", (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      const ans = req.body.ansResponse.answers,
+      const title = req.body.ansResponse.title,
+      const ansResponse = new Response({
+        answers:ans,
+        code:req.params.code,
+        submitted_by:authData.username,
+        title:title
+      });
+      ansResponse.save().then(()=>res.json({message:'Submitted'}));
+    }
+  });
 });
 
 // To submit qustions' by admin or teacher
 app.post("/api/conduct_exam", verifyToken, (req, res) => {
-  if (!req.body.exam) {
-    res.status(404).send("Please give a valid questions");
-    return;
-  }
-  let ques = req.body.exam;
-  res.send(ques);
+  jwt.verify(req.token, "secretKey", (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      let examResp = req.body.exam;
+      const correct_ans = new CorrectAns({
+        code:examResp.title+authData.username,
+        ans:examResp.answers,
+      });
+
+      correct_ans.save();
+
+      const exam = new Exam({
+        code:examResp.title+authData.username,
+        conducted_by:authData.username,
+        duration:examResp.duration,
+        schedule_time:examResp.schedule_time,
+        title:title,
+      });
+      exam.save().then(()=>res.json({message:examResp.title+authData.username}));
+    }
+  });
+});
+// To get respones of students
+app.get('/api/response',(req,res)=>{
+  Response.find().then((resp)=>{
+    res.json({
+      response:resp,
+    });
+  });
 });
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));

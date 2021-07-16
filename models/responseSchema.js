@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 
 const ResponseSchema = new mongoose.Schema({
+  answers: {
+    type: Array,
+    required: true,
+  },
   code: {
     type: String,
     required: true,
-  },
-  marks: {
-    type: Int,
-    reuired: true,
   },
   submitted_by: {
     type: String,
