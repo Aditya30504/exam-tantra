@@ -6,7 +6,7 @@ const ExamSchema = new mongoose.Schema({
     required: true,
   },
   duration: {
-    type: Int16Array,
+    type: String,
     required: true,
   },
   questions: {
@@ -27,5 +27,5 @@ const ExamSchema = new mongoose.Schema({
   },
 });
 
-const Exam = mongoose.model("exam-tantra", ExamSchema);
+const Exam = mongoose.model("exams", ExamSchema);
 module.exports = Exam;

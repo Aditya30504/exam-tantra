@@ -41,7 +41,7 @@ app.set("views", path.join(__dirname, "views"));
 
 // conneting to database
 const DB =
-  "mongodb+srv://chanshu:Casd@805131@exam-tantra.sweey.mongodb.net/exam-tantra?retryWrites=true&w=majority";
+  "mongodb+srv://chanshu:Casd@805131@exam-tantra.sweey.mongodb.net/exam-tantra?retryWrites=true&w=majority&ssl=true";
 mongoose
   .connect(DB, {
     useNewUrlParser: true,
@@ -53,7 +53,6 @@ mongoose
     console.log("connection successful");
   })
   .catch((err) => console.log(err));
-
 
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 // To render html page of home
@@ -86,19 +85,23 @@ app.get("/conduct_exam", (req, res) => {
   res.send("rendering html page for creating exams ");
 });
 
+// To render html page for response
+app.get("/conduct_exam", (req, res) => {
+  res.send("rendering html page for creating exams ");
+});
 // --------------------------------------------------------------------------
 //                     for api or microservices
 // --------------------------------------------------------------------------
 // To find a user
-app.get('api/user/:username',(req,res)=>{
-  User.findOne({'name':req.body.username}).then((user)=>{
-    if(user){
+app.get("/api/user/:username", (req, res) => {
+  User.findOne({ name: req.params.username }).then((user) => {
+    if (user) {
       res.json({
-        message:'yes',
+        message: "yes",
       });
-    }else{
+    } else {
       res.json({
-        message:'no',
+        message: "no",
       });
     }
   });
@@ -108,10 +111,11 @@ app.get('api/user/:username',(req,res)=>{
 app.post("/api/register", (req, res) => {
   user = new User({
     name: req.body.username,
-    email:req.body.email,
+    email: req.body.email,
     password: req.body.password,
   });
-  user.save().then(()=>{
+
+  user.save().then((result) => {
     res.sendStatus(200);
   });
 });
@@ -125,12 +129,15 @@ app.post("/api/login", (req, res) => {
 });
 
 // To get exam's questions along with instructions
-app.get("/api/exam/:code", (req, res) => {
-  let exam_code = req.params.code;
-  Exam.findOne({ code: exam_code }).then((exam) => {
-    res.send({
-      exam: exam,
-    });
+app.get("/api/exam/:exam_code", (req, res) => {
+  Exam.findOne({ code: req.params.exam_code }).then((exam) => {
+    if (exam) {
+      res.json({
+        exam: exam,
+      });
+    } else {
+      res.sendStatus(403);
+    }
   });
 });
 
@@ -140,15 +147,16 @@ app.post("/api/exam/:code", verifyToken, (req, res) => {
     if (err) {
       res.sendStatus(403);
     } else {
-      const ans = req.body.ansResponse.answers,
-      const title = req.body.ansResponse.title,
+      const ans = req.body.answers;
+
       const ansResponse = new Response({
-        answers:ans,
-        code:req.params.code,
-        submitted_by:authData.username,
-        title:title
+        answers: ans.answers,
+        code: req.params.code,
+        conducted_by:ans.conducted_by,
+        submitted_by: authData.username,
+        title: ans.title,
       });
-      ansResponse.save().then(()=>res.json({message:'Submitted'}));
+      ansResponse.save().then(() => res.json({ message: "Submitted" }));
     }
   });
 });
@@ -161,30 +169,46 @@ app.post("/api/conduct_exam", verifyToken, (req, res) => {
     } else {
       let examResp = req.body.exam;
       const correct_ans = new CorrectAns({
-        code:examResp.title+authData.username,
-        ans:examResp.answers,
+        code: examResp.title + authData.username,
+        ans: examResp.answers,
       });
 
       correct_ans.save();
 
       const exam = new Exam({
-        code:examResp.title+authData.username,
-        conducted_by:authData.username,
-        duration:examResp.duration,
-        schedule_time:examResp.schedule_time,
-        title:title,
+        code: examResp.title + authData.username,
+        conducted_by: authData.username,
+        duration: examResp.duration,
+        schedule_time: examResp.schedule_time,
+        title: examResp.title,
+        questions:examResp.questions
       });
-      exam.save().then(()=>res.json({message:examResp.title+authData.username}));
+      exam
+        .save()
+        .then(() => res.json({ message: examResp.title + authData.username }));
     }
   });
 });
 // To get respones of students
-app.get('/api/response',(req,res)=>{
-  Response.find().then((resp)=>{
+app.get("/api/response", (req, res) => {
+  Response.find().then((resp) => {
     res.json({
-      response:resp,
+      response: resp,
     });
   });
 });
+app.get("/api/correct_answers/:code",(req,res)=>{
+  CorrectAns.findOne({
+    'code':req.params.code
+  }).then((resp)=>{
+    if(resp){
+      res.json({
+        correct_ans:resp
+      })
+    }else{
+      res.sendStatus(403);
+    }
+  })
+})
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));

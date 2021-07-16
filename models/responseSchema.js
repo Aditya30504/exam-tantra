@@ -23,5 +23,5 @@ const ResponseSchema = new mongoose.Schema({
   },
 });
 
-const Response = mongoose.model("exam-tantra", ResponseSchema);
+const Response = mongoose.model("response", ResponseSchema);
 module.exports = Response;

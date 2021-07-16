@@ -11,5 +11,5 @@ const CorrectAnsSchema = new mongoose.Schema({
   },
 });
 
-const CorrectAns = mongoose.model("exam-tantra", CorrectAnsSchema);
+const CorrectAns = mongoose.model("correct_answer", CorrectAnsSchema);
 module.exports = CorrectAns;
