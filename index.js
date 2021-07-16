@@ -3,6 +3,8 @@ const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const mongoose = require("mongoose");
+
 
 // middleware to verify token {function}
 function verifyToken(req, res, next) {
@@ -30,11 +32,23 @@ app.use(express.urlencoded({ extended: true }));
 
 // for serving static files only
 app.use("/public", express.static(path.join(__dirname, "/public")));
-// Set the template engine as pug
-app.set("view engine", "pug");
+
 // set the views directory
 app.set("views", path.join(__dirname, "views"));
 
+// conneting to database
+const DB = "mongodb+srv://chanshu:Casd@805131@exam-tantra.sweey.mongodb.net/exam-tantra?retryWrites=true&w=majority";
+mongoose
+.connect(DB, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+})
+.then(() => {
+  console.log("connection successful");
+})
+.catch((err) => console.log(err));
 const questions = [
   {
     id: 1,
@@ -63,22 +77,36 @@ const questions = [
 ];
 
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
+// To render html page of home
 app.get("/", (req, res) => {
   res.send("Hello World");
-});
-
-app.get("/quiz", (req, res) => {
-  res.render("demo.pug", { questions: questions });
-});
-
-app.get("/quiz", (req, res) => {
-  res.render("demo.pug", { questions: questions });
 });
 
 app.post("/", (req, res) => {
   console.log(req.body);
   res.render("finish.pug");
 });
+
+// To render html page for login
+app.get("/login", (req, res) => {
+  res.send("this is login page");
+});
+
+// To render html page for register
+app.get("/register", (req, res) => {
+  res.send("this is sign-up page");
+});
+
+// To render html page for giving exam
+app.get("/exam", (req, res) => {
+  res.send("this is exam page");
+});
+
+// To render html page for conduncting exam
+app.get("/conduct_exam",(req, res) => {
+  res.send("rendering html page for creating exams ");
+});
+
 
 // --------------------------------------------------------------------------
 //                     for api or microservices
@@ -100,9 +128,9 @@ app.post("/api/login", (req, res) => {
   });
   res.json(token);
 });
-// To get questions
+// To get exam's questions along with instructions
 /*
-app.get("/api/questions", verifyToken, (req, res) => {
+app.get("/api/exam", verifyToken, (req, res) => {
   jwt.verify(req.token, "secretKey", (err, authData) => {
     if (err) {
       res.sendStatus(403);
@@ -114,14 +142,16 @@ app.get("/api/questions", verifyToken, (req, res) => {
 });
 */
 // for testing purpose only
-app.get("/api/questions", (req, res) => {
+// To get exam's questions along with instructions
+app.get("/api/exam", (req, res) => {
+  let exam_code = req.body.exam_code;
   res.send({
     ques: questions,
   });
 });
 
 // To submit qustions' answers
-app.post("/api/answers", verifyToken, (req, res) => {
+app.post("/api/exam", verifyToken, (req, res) => {
   if (!req.body.answers) {
     res.status(404).send("Please give a valid answers");
     return;
@@ -130,15 +160,14 @@ app.post("/api/answers", verifyToken, (req, res) => {
   res.send(ans);
 });
 
-// To create qustions' by admin or teacher
-app.post("/api/questions", verifyToken, (req, res) => {
-  if (!req.body.questions) {
+// To submit qustions' by admin or teacher
+app.post("/api/conduct_exam", verifyToken, (req, res) => {
+  if (!req.body.exam) {
     res.status(404).send("Please give a valid questions");
     return;
   }
-  let ques = req.body.answers;
+  let ques = req.body.exam;
   res.send(ques);
 });
-
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
