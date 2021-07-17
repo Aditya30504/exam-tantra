@@ -57,7 +57,7 @@ mongoose
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 // To render html page of home
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.send("home.html");
 });
 
 app.post("/", (req, res) => {
@@ -67,27 +67,27 @@ app.post("/", (req, res) => {
 
 // To render html page for login
 app.get("/login", (req, res) => {
-  res.send("this is login page");
+  res.send("login.html");
 });
 
 // To render html page for register
 app.get("/register", (req, res) => {
-  res.send("this is sign-up page");
+  res.send("register.html");
 });
 
 // To render html page for giving exam
 app.get("/exam", (req, res) => {
-  res.send("this is exam page");
+  res.send("exam.html");
 });
 
 // To render html page for conduncting exam
 app.get("/conduct_exam", (req, res) => {
-  res.send("rendering html page for creating exams ");
+  res.send("conduct_exam.html");
 });
 
 // To render html page for response
-app.get("/conduct_exam", (req, res) => {
-  res.send("rendering html page for creating exams ");
+app.get("/response", (req, res) => {
+  res.send("response.html");
 });
 // --------------------------------------------------------------------------
 //                     for api or microservices
@@ -96,13 +96,10 @@ app.get("/conduct_exam", (req, res) => {
 app.get("/api/user/:username", (req, res) => {
   User.findOne({ name: req.params.username }).then((user) => {
     if (user) {
-      res.json({
-        message: "yes",
-      });
+      res.send(user);
     } else {
-      res.json({
-        message: "no",
-      });
+      // Not found
+      res.sendStatus(404);
     }
   });
 });
@@ -116,16 +113,16 @@ app.post("/api/register", (req, res) => {
   });
 
   user.save().then((result) => {
-    res.sendStatus(200);
-  });
+    res.send(result);
+  })
 });
 
 // To log in a user
 app.post("/api/login", (req, res) => {
   const token = jwt.sign({ username: req.body.username }, "secretKey", {
-    expiresIn: "1800s",
-  });
-  res.json(token);
+    expiresIn: "28800s",
+  })
+  res.send(token);
 });
 
 // To get exam's questions along with instructions
@@ -136,7 +133,8 @@ app.get("/api/exam/:exam_code", (req, res) => {
         exam: exam,
       });
     } else {
-      res.sendStatus(403);
+      // Not found
+      res.sendStatus(404);
     }
   });
 });
@@ -152,7 +150,7 @@ app.post("/api/exam/:code", verifyToken, (req, res) => {
       const ansResponse = new Response({
         answers: ans.answers,
         code: req.params.code,
-        conducted_by:ans.conducted_by,
+        conducted_by: ans.conducted_by,
         submitted_by: authData.username,
         title: ans.title,
       });
@@ -168,12 +166,6 @@ app.post("/api/conduct_exam", verifyToken, (req, res) => {
       res.sendStatus(403);
     } else {
       let examResp = req.body.exam;
-      const correct_ans = new CorrectAns({
-        code: examResp.title + authData.username,
-        ans: examResp.answers,
-      });
-
-      correct_ans.save();
 
       const exam = new Exam({
         code: examResp.title + authData.username,
@@ -181,34 +173,49 @@ app.post("/api/conduct_exam", verifyToken, (req, res) => {
         duration: examResp.duration,
         schedule_time: examResp.schedule_time,
         title: examResp.title,
-        questions:examResp.questions
+        questions: examResp.questions,
       });
+
+      const correct_ans = new CorrectAns({
+        code: examResp.title + authData.username,
+        ans: examResp.answers,
+      });
+      correct_ans.save();
       exam
         .save()
-        .then(() => res.json({ message: examResp.title + authData.username }));
+        .then(() => res.send(examResp.title + authData.username));
     }
-  });
+  })
 });
+
 // To get respones of students
 app.get("/api/response", (req, res) => {
   Response.find().then((resp) => {
-    res.json({
-      response: resp,
-    });
-  });
-});
-app.get("/api/correct_answers/:code",(req,res)=>{
-  CorrectAns.findOne({
-    'code':req.params.code
-  }).then((resp)=>{
-    if(resp){
-      res.json({
-        correct_ans:resp
-      })
-    }else{
+    if (resp) {
+      res.send(resp); 
+    } else {
+      // Not found
       res.sendStatus(403);
     }
   })
-})
+});
+
+// To get correct answers
+app.get("/api/correct_answers/:code", (req, res) => {
+  CorrectAns.findOne({
+    code: req.params.code,
+  }).then((resp) => {
+    if (resp) {
+      res.json({
+        correct_ans: resp,
+      })
+    } else {
+      // Not found
+      res.sendStatus(404);
+    }
+  })
+});
+
+
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
