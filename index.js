@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // for serving static files only
-app.use("/public", express.static(path.join(__dirname, "/public")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 // set the views directory
 app.set("views", path.join(__dirname, "views"));
@@ -57,7 +57,11 @@ mongoose
 // +++++++++++++++++++++++++++++++++ FOR ENDPOINTS +++++++++++++++++++++++
 // To render html page of home
 app.get("/", (req, res) => {
-  res.send("home.html");
+  res.sendFile(path.join(__dirname, "./views/home.html"));
+});
+// Renders dashboard
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "./views/dashboard.html"));
 });
 
 app.post("/", (req, res) => {
@@ -67,27 +71,27 @@ app.post("/", (req, res) => {
 
 // To render html page for login
 app.get("/login", (req, res) => {
-  res.send("login.html");
+  res.sendFile(path.join(__dirname, "./views/login.html"));
 });
 
 // To render html page for register
 app.get("/register", (req, res) => {
-  res.send("register.html");
+  res.sendFile(path.join(__dirname, "./views/register.html"));
 });
 
 // To render html page for giving exam
 app.get("/exam", (req, res) => {
-  res.send("exam.html");
+  res.sendFile(path.join(__dirname, "./views/exam.html"));
 });
 
 // To render html page for conduncting exam
 app.get("/conduct_exam", (req, res) => {
-  res.send("conduct_exam.html");
+  res.sendFile(path.join(__dirname, "./views/conduct_exam.html"));
 });
 
 // To render html page for response
 app.get("/response", (req, res) => {
-  res.send("response.html");
+  res.sendFile(path.join(__dirname, "./views/response.html"));
 });
 // --------------------------------------------------------------------------
 //                     for api or microservices
@@ -99,7 +103,7 @@ app.get("/api/user/:username", (req, res) => {
       res.send(user);
     } else {
       // Not found
-      res.sendStatus(404);
+      res.send("not exists");
     }
   });
 });
@@ -114,24 +118,53 @@ app.post("/api/register", (req, res) => {
 
   user.save().then((result) => {
     res.send(result);
-  })
+  });
 });
 
 // To log in a user
 app.post("/api/login", (req, res) => {
   const token = jwt.sign({ username: req.body.username }, "secretKey", {
     expiresIn: "28800s",
-  })
+  });
   res.send(token);
 });
 
-// To get exam's questions along with instructions
+// To get user-profles
+app.post("/api/profile", verifyToken, (req, res) => {
+  jwt.verify(req.token, "secretKey", (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      res.send(authData.username);
+    }
+  });
+});
+// To get questions along with instructions
 app.get("/api/exam/:exam_code", (req, res) => {
   Exam.findOne({ code: req.params.exam_code }).then((exam) => {
     if (exam) {
-      res.json({
-        exam: exam,
-      });
+      let scheduleDate = new Date(exam.schedule_time);
+      let endDate = scheduleDate.getTime() + parseInt(exam.duration, 10) * 60 * 1000;
+      let currDate = new Date();
+      let distance = scheduleDate.getTime() - currDate.getTime();
+      if (distance > 0) {
+        // except questions send everything
+        console.log(distance);
+        res.json({
+          "code":exam.code,
+          "duration":exam.duration,
+          "schedule_time":exam.schedule_time,
+          "title":exam.title,
+          "status":"pending"
+        });
+      }else if(endDate-currDate<=0){
+        // exam over
+        res.sendStatus(404);
+      }
+      else {
+        // send exam
+        res.send(exam);
+      }
     } else {
       // Not found
       res.sendStatus(404);
@@ -145,59 +178,54 @@ app.post("/api/exam/:code", verifyToken, (req, res) => {
     if (err) {
       res.sendStatus(403);
     } else {
-      const ans = req.body.answers;
-
       const ansResponse = new Response({
-        answers: ans.answers,
+        answers: req.body.answers,
         code: req.params.code,
-        conducted_by: ans.conducted_by,
+        conducted_by: req.body.conducted_by,
         submitted_by: authData.username,
-        title: ans.title,
+        title: req.body.title,
       });
-      ansResponse.save().then(() => res.json({ message: "Submitted" }));
+      ansResponse.save().then(() => res.send('!! Submitted Successfully !!'));
     }
   });
 });
 
-// To submit qustions' by admin or teacher
+// To create qustions' by admin or teacher
 app.post("/api/conduct_exam", verifyToken, (req, res) => {
   jwt.verify(req.token, "secretKey", (err, authData) => {
     if (err) {
       res.sendStatus(403);
     } else {
-      let examResp = req.body.exam;
-
+      console.log(req.body);
       const exam = new Exam({
-        code: examResp.title + authData.username,
+        code: req.body.title + authData.username,
         conducted_by: authData.username,
-        duration: examResp.duration,
-        schedule_time: examResp.schedule_time,
-        title: examResp.title,
-        questions: examResp.questions,
+        duration: req.body.duration,
+        schedule_time: req.body.schedule_time,
+        title: req.body.title,
+        questions: req.body.questions,
       });
-
+      // upload correct answer
       const correct_ans = new CorrectAns({
-        code: examResp.title + authData.username,
-        ans: examResp.answers,
+        code: req.body.title + authData.username,
+        ans: req.body.correct_answer,
       });
       correct_ans.save();
-      exam
-        .save()
-        .then(() => res.send(examResp.title + authData.username));
+      exam.save().then(() => res.send(req.body.title + authData.username));
     }
-  })
+  });
 });
 
 // To get respones of students
 app.get("/api/response", (req, res) => {
   Response.find().then((resp) => {
     if (resp) {
-      res.send(resp); 
+      res.send(resp);
     } else {
       // Not found
       res.sendStatus(403);
     }
-  })
+  });
 });
 
 // To get correct answers
@@ -208,14 +236,13 @@ app.get("/api/correct_answers/:code", (req, res) => {
     if (resp) {
       res.json({
         correct_ans: resp,
-      })
+      });
     } else {
       // Not found
       res.sendStatus(404);
     }
-  })
+  });
 });
-
 
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
