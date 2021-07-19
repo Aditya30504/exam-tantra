@@ -1,22 +1,25 @@
 var table = document.getElementById("myTable");
-
 async function getResponse() {
-  const token = localStorage.getItem("token");
+  let token = localStorage.getItem("token");
+  // console.log(token);
   const origin = document.location.origin;
   const response = await fetch(origin + "/api/response", {
     method: "POST",
     headers: {
-      Authorization: "Bearer" + " " + token,
+      Authorization: "Bearer " + token
     },
   });
   // 200->OK
   if (response.ok) {
-    const result = await response.arrayBuffer();
-    fillData(result);
+    const result = await response.json();
+    console.log(result.result);
+    // console.log(typeof result);
+    fillData(result.result);
   }
   // Something went wrong
   else {
-    alert("Something went wrong...");
+    var err = await response.text();
+    alert("Something went wrong..." + err);
   }
 }
 // helper function
@@ -39,23 +42,5 @@ function fillData(responses) {
     cell6.innerHTML = resp.notAttemped;
   });
 }
-let array = [
-  {
-    correct: "10",
-    inCorrect: "2",
-    notAttemped: "3",
-    code: "MA102sumit",
-    submitted_by: "chanshu",
-    title: "MA102",
-  },
-  {
-    correct: "8",
-    inCorrect: "2",
-    notAttemped: "5",
-    code: "MA102sumit",
-    submitted_by: "balmiki",
-    title: "MA102",
-  },
-];
-// fillData(array);
-setTimeout(getResponse, 3000);
+setTimeout(getResponse, 5000);
+// getResponse();

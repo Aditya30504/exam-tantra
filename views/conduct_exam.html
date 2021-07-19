@@ -50,7 +50,7 @@
     <script type="text/javascript">
       var questions = [];
       var answers = [];
-      function saveQues(questionName, options,answer) {
+      function saveQues(questionName, options,ans) {
         let q = {
           name: questionName,
           option_1: options[0].value,
@@ -58,8 +58,8 @@
           option_3: options[2].value,
           option_4: options[3].value,
         };
-        answers.push(answer);
         questions.push(q);
+        answers.push(ans);
       }
       function insertQues() {
         let question = document.getElementById("question-bar");
@@ -83,7 +83,7 @@
         let question = document.getElementById("question-bar");
         let options = document.getElementsByClassName("options");
         let answer = document.getElementById("answer");
-        saveQues(question,options,answer);
+        saveQues(question.value,options,answer.value);
         let date = new Date();
         let year = date.getFullYear();
         let month = ["January","February","March","April","May","June","July","August","September","November","December"];
@@ -93,8 +93,9 @@
         let duration = document.getElementById("duration").value;
         let schedule_time = month[0] + " " + day + ", " + year + " " + time;
         let title = document.getElementById("exam-title").value;
-        console.log("\n\n");
         console.log(`${duration} ${title} ${schedule_time}`);
+        console.log(questions);
+        console.log(answers);
         
         if (duration && schedule_time && title) {
           // post question along with instructions
@@ -126,6 +127,7 @@
         else {
           alert("  :) duration and starting time can't be empty ");
         }
+      
       }
     </script>
   </body>

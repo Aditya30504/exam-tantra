@@ -181,9 +181,10 @@ app.post("/api/exam/:code", verifyToken, (req, res) => {
       CorrectAns.findOne({
         code: req.params.code,
       }).then((correct_answer) => {
+        console.log(correct_answer.ans);
         const ansResponse = new Response({
-          correct: noOfCorrect(correct_answer, req.body.answers),
-          inCorrect: noOfInCorrect(correct_answer, req.body.answers),
+          correct: noOfCorrect(correct_answer.ans, req.body.answers),
+          inCorrect: noOfInCorrect(correct_answer.ans, req.body.answers),
           notAttemped: notAttemped(req.body.answers),
           code: req.params.code,
           conducted_by: req.body.conducted_by,
@@ -223,16 +224,18 @@ app.post("/api/conduct_exam", verifyToken, (req, res) => {
 });
 
 // To get respones of students
-app.post("/api/response", (req, res) => {
+app.post("/api/response",verifyToken, (req, res) => {
   jwt.verify(req.token, "secretKey", (err, authData) => {
     if (err) {
-      res.sendStatus(403);
+      res.status(404).send(err);
     } else {
       Response.find({
         conducted_by: authData.username,
       }).then((resp) => {
         if (resp) {
-          res.send(resp);
+          res.json({
+            result:resp
+          });
         } else {
           res.sendStatus(403);
         }
@@ -261,21 +264,21 @@ app.get("/api/correct_answers/:code", (req, res) => {
 function noOfCorrect(correct_ans, ans) {
   let no_correct = 0;
   for (let index = 0; index < ans.length; index++) {
-    if (ans[index] == correct_answer[index]) {
+    if (ans[index] == correct_ans[index]) {
       no_correct++;
     }
-    return no_correct.toString;
   }
+  return no_correct;
 }
 
-function noOfInCorrect(correct_answer, ans) {
+function noOfInCorrect(correct_ans, ans) {
   let no_in_correct = 0;
   for (let index = 0; index < ans.length; index++) {
-    if (ans[index] != correct_answer[index]) {
+    if (ans[index] != correct_ans[index]) {
       no_in_correct++;
     }
-    return no_in_correct.toString;
   }
+  return no_in_correct;
 }
 
 function notAttemped(ans) {
@@ -284,8 +287,8 @@ function notAttemped(ans) {
     if (a == 0) {
       noOfNotAttemped++;
     }
-    return noOfNotAttemped.toString;
   });
+  return noOfNotAttemped;
 }
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
