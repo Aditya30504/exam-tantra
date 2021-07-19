@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>response</title>
+    <link rel="stylesheet" type="text/css" href="../public/response.css" />
+  </head>
 
-<head>
-  <meta charset="utf-8">
-  <title>response</title>
-
-  <link rel="stylesheet" href="../public/style.css">
-</head>
-
-<body>
-  <nav>
+  <body>
     <div class="nav-bar">
       <div class="left">
         <div class="logo">
@@ -18,40 +15,29 @@
       </div>
       <div class="right">
         <div class="logout">
-          <button type="button" name="button" class="logout-btn"><a href="#">logout</a></button>
+          <button type="button" name="button" class="logout-btn">
+            <a href="#">logout</a>
+          </button>
         </div>
       </div>
     </div>
-  </nav>
 
-  <div class="response-page">
-    <div class="response-table">
+    <div class="response-page">
       <table>
-        <tr>
-          <th>
-            <h5>Token no.</h5>
-          </th>
-          <th>
-            <h5>Title.</h5>
-          </th>
-          <th>
-            <h5>Marks.</h5>
-          </th>
-
-        </tr>
-        <tr>
-          <th><span id="token-no"></span></th>
-          <th><span id="title-no"></span></th>
-            <th><span id="marks-obtained"></span></th>
+        <tr id="head-row">
+          <th>sno.</th>
+          <th>code</th>
+          <th>title</th>
+          <th>submitted_by</th>
+          <th>correct</th>
+          <th>incorrect</th>
+          <th>not attemped</th>
         </tr>
       </table>
     </div>
 
-  </div>
-
-  <div class="copyright">
-    <p id="copy-right-text">Copyright By Exam-Tantra</p>
-  </div>
-</body>
-
+    <div class="footer">
+      <p id="copy-right-text">Copyright By Exam-Tantra</p>
+    </div>
+  </body>
 </html>

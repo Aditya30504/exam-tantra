@@ -13,9 +13,10 @@
         ><input type="text" id="duration" placeholder="30" />
         <div></div>
         <label> Start time : </label
-        ><input type="text" id="start" placeholder="HH:MM:SS" />
+        ><input type="time" id="start" value="13:30:00" step="1" />
       </nav>
     </header>
+    <!-- instruction header ends -->
     <main>
       <input type="text" placeholder="Insert a question" id="question-bar" />
 
@@ -45,24 +46,29 @@
       <button id="insert-btn" onclick="insertQues()">Insert</button>
       <button id="submit-btn" onclick="submitQues()">Submit</button>
     </div>
+
     <script type="text/javascript">
       var questions = [];
       var answers = [];
+      function saveQues(questionName, options,answer) {
+        let q = {
+          name: questionName,
+          option_1: options[0].value,
+          option_2: options[1].value,
+          option_3: options[2].value,
+          option_4: options[3].value,
+        };
+        answers.push(answer);
+        questions.push(q);
+      }
       function insertQues() {
         let question = document.getElementById("question-bar");
         let options = document.getElementsByClassName("options");
         let answer = document.getElementById("answer");
         if (question.value && answer.value) {
-          let q = {
-            name: question.value,
-            option_1: options[0].value,
-            option_2: options[1].value,
-            option_3: options[2].value,
-            option_4: options[3].value,
-          };
-          answers.push(answer.value);
-          questions.push(q);
-          console.log(questions[0]["name"]);
+          // saving the question and its answer
+          saveQues(question.value, options,answer.value);
+          // update the question-input and options input
           question.value = "";
           options[0].value = "";
           options[1].value = "";
@@ -74,16 +80,22 @@
         }
       }
       async function submitQues() {
-        var date = new Date();
-        var month = date.getMonth();
-        var day = date.getDay();
-        var year = date.getFullYear();
+        let question = document.getElementById("question-bar");
+        let options = document.getElementsByClassName("options");
+        let answer = document.getElementById("answer");
+        saveQues(question,options,answer);
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = ["January","February","March","April","May","June","July","August","September","November","December"];
+        month = month.filter((m,i)=>i==date.getMonth());
+        let day = date.getDate();
         let time = document.getElementById("start").value;
         let duration = document.getElementById("duration").value;
-        let schedule_time = month + " " + day + ", " + year + " " + time;
+        let schedule_time = month[0] + " " + day + ", " + year + " " + time;
         let title = document.getElementById("exam-title").value;
-        console.log(duration + title + schedule_time);
-        insertQues();
+        console.log("\n\n");
+        console.log(`${duration} ${title} ${schedule_time}`);
+        
         if (duration && schedule_time && title) {
           // post question along with instructions
           const origin = document.location.origin;
@@ -105,11 +117,13 @@
           if (response.ok) {
             let exam_code = await response.text();
             alert("Your exam_code is : " + exam_code);
+            document.location.href = origin+'/dashboard';
           } else {
             let exam_code = await response.text();
             alert("Something went wrong\n" + exam_code);
           }
-        } else {
+        } 
+        else {
           alert("  :) duration and starting time can't be empty ");
         }
       }

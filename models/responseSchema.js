@@ -1,8 +1,16 @@
 const mongoose = require("mongoose");
 
 const ResponseSchema = new mongoose.Schema({
-  answers: {
-    type: Array,
+  correct: {
+    type: String,
+    required: true,
+  },
+  inCorrect: {
+    type: String,
+    required: true,
+  },
+  notAttemped: {
+    type: String,
     required: true,
   },
   code: {

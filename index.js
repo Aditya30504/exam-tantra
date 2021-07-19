@@ -144,24 +144,24 @@ app.get("/api/exam/:exam_code", (req, res) => {
   Exam.findOne({ code: req.params.exam_code }).then((exam) => {
     if (exam) {
       let scheduleDate = new Date(exam.schedule_time);
-      let endDate = scheduleDate.getTime() + parseInt(exam.duration, 10) * 60 * 1000;
+      let endDate =
+        scheduleDate.getTime() + parseInt(exam.duration, 10) * 60 * 1000;
       let currDate = new Date();
       let distance = scheduleDate.getTime() - currDate.getTime();
       if (distance > 0) {
         // except questions send everything
         console.log(distance);
         res.json({
-          "code":exam.code,
-          "duration":exam.duration,
-          "schedule_time":exam.schedule_time,
-          "title":exam.title,
-          "status":"pending"
+          code: exam.code,
+          duration: exam.duration,
+          schedule_time: exam.schedule_time,
+          title: exam.title,
+          status: "pending",
         });
-      }else if(endDate-currDate<=0){
+      } else if (endDate - currDate <= 0) {
         // exam over
         res.sendStatus(404);
-      }
-      else {
+      } else {
         // send exam
         res.send(exam);
       }
@@ -178,14 +178,20 @@ app.post("/api/exam/:code", verifyToken, (req, res) => {
     if (err) {
       res.sendStatus(403);
     } else {
-      const ansResponse = new Response({
-        answers: req.body.answers,
+      CorrectAns.findOne({
         code: req.params.code,
-        conducted_by: req.body.conducted_by,
-        submitted_by: authData.username,
-        title: req.body.title,
+      }).then((correct_answer) => {
+        const ansResponse = new Response({
+          correct: noOfCorrect(correct_answer, req.body.answers),
+          inCorrect: noOfInCorrect(correct_answer, req.body.answers),
+          notAttemped: notAttemped(req.body.answers),
+          code: req.params.code,
+          conducted_by: req.body.conducted_by,
+          submitted_by: authData.username,
+          title: req.body.title,
+        });
+        ansResponse.save().then(() => res.send("!! Submitted Successfully !!"));
       });
-      ansResponse.save().then(() => res.send('!! Submitted Successfully !!'));
     }
   });
 });
@@ -217,13 +223,20 @@ app.post("/api/conduct_exam", verifyToken, (req, res) => {
 });
 
 // To get respones of students
-app.get("/api/response", (req, res) => {
-  Response.find().then((resp) => {
-    if (resp) {
-      res.send(resp);
-    } else {
-      // Not found
+app.post("/api/response", (req, res) => {
+  jwt.verify(req.token, "secretKey", (err, authData) => {
+    if (err) {
       res.sendStatus(403);
+    } else {
+      Response.find({
+        conducted_by: authData.username,
+      }).then((resp) => {
+        if (resp) {
+          res.send(resp);
+        } else {
+          res.sendStatus(403);
+        }
+      });
     }
   });
 });
@@ -244,5 +257,35 @@ app.get("/api/correct_answers/:code", (req, res) => {
   });
 });
 
+// helper functions
+function noOfCorrect(correct_ans, ans) {
+  let no_correct = 0;
+  for (let index = 0; index < ans.length; index++) {
+    if (ans[index] == correct_answer[index]) {
+      no_correct++;
+    }
+    return no_correct.toString;
+  }
+}
+
+function noOfInCorrect(correct_answer, ans) {
+  let no_in_correct = 0;
+  for (let index = 0; index < ans.length; index++) {
+    if (ans[index] != correct_answer[index]) {
+      no_in_correct++;
+    }
+    return no_in_correct.toString;
+  }
+}
+
+function notAttemped(ans) {
+  let noOfNotAttemped = 0;
+  ans.forEach((a) => {
+    if (a == 0) {
+      noOfNotAttemped++;
+    }
+    return noOfNotAttemped.toString;
+  });
+}
 // ++++++++++ FOR LISTENING +++++++++++++++++++++++
 app.listen(port, () => console.log(`Server is listening at port ${port}`));
