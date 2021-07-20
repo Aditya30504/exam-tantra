@@ -42,5 +42,12 @@ function fillData(responses) {
     cell6.innerHTML = resp.notAttemped;
   });
 }
+
+// to log-out the user 
+function LogOut() {
+  const origin = document.location.origin;
+  localStorage.removeItem('token');
+  document.location.href=origin;
+} 
 setTimeout(getResponse, 5000);
 // getResponse();
