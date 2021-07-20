@@ -12,7 +12,7 @@
     
 ## Screenshots
 
-![alt text](https://drive.google.com/file/d/1OB8xJ79wf31FeKrDnQNvPijxIz00C48u/view?usp=sharing)
+![alt text](https://github.com/chanshu19/exam-tantra/blob/main/conduct_exam.PNG)
 
   
 ## Tech Stack
